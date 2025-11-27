@@ -3,7 +3,7 @@
 一个优雅的 shell 别名管理工具，使用 Tauri + Vue + TypeScript 构建。
 
 <div align="center">
-  <img src="./screenshot.png" width="80%" />
+  <img src="./screenshot.png" width="40%" />
 </div>
 
 ## 功能特性
