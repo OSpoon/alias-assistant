@@ -227,18 +227,128 @@ fn delete_alias(name: String) -> Result<(), String> {
     write_aliases(aliases)
 }
 
+#[tauri::command]
+fn copy_alias_name(alias_name: String) -> Result<(), String> {
+    let aliases = get_aliases()?;
+    if let Some(alias) = aliases.iter().find(|a| a.name == alias_name) {
+        let alias_text = alias.name.clone();
+        
+        #[cfg(target_os = "macos")]
+        {
+            Command::new("pbcopy")
+                .stdin(std::process::Stdio::piped())
+                .spawn()
+                .and_then(|mut child| {
+                    use std::io::Write;
+                    if let Some(mut stdin) = child.stdin.take() {
+                        stdin.write_all(alias_text.as_bytes())?;
+                        stdin.flush()?;
+                    }
+                    Ok(())
+                })
+                .map_err(|e| format!("Failed to copy to clipboard: {}", e))?;
+        }
+
+        #[cfg(target_os = "windows")]
+        {
+            Command::new("powershell")
+                .arg("-Command")
+                .arg(format!("Set-Clipboard -Value '{}'", alias_text.replace("'", "''")))
+                .spawn()
+                .map_err(|e| format!("Failed to copy to clipboard: {}", e))?;
+        }
+
+        #[cfg(target_os = "linux")]
+        {
+            let xclip_result = Command::new("xclip")
+                .arg("-selection")
+                .arg("clipboard")
+                .stdin(std::process::Stdio::piped())
+                .spawn();
+            
+            if let Ok(mut child) = xclip_result {
+                use std::io::Write;
+                if let Some(mut stdin) = child.stdin.take() {
+                    stdin.write_all(alias_text.as_bytes())
+                        .map_err(|e| format!("Failed to write to xclip: {}", e))?;
+                    stdin.flush()
+                        .map_err(|e| format!("Failed to flush xclip: {}", e))?;
+                }
+            } else {
+                Command::new("xsel")
+                    .arg("--clipboard")
+                    .arg("--input")
+                    .stdin(std::process::Stdio::piped())
+                    .spawn()
+                    .and_then(|mut child| {
+                        use std::io::Write;
+                        if let Some(mut stdin) = child.stdin.take() {
+                            stdin.write_all(alias_text.as_bytes())?;
+                            stdin.flush()?;
+                        }
+                        Ok(())
+                    })
+                    .map_err(|e| format!("Failed to copy to clipboard: {}", e))?;
+            }
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command]
+fn export_aliases() -> Result<String, String> {
+    let path = get_alias_file_path()?;
+    let content = read_to_string(path).unwrap_or_default();
+    Ok(content)
+}
+
+#[tauri::command]
+fn import_aliases_from_content(content: String) -> Result<(), String> {
+    let mut existing_aliases = get_aliases()?;
+    
+    // Parse aliases from the imported content
+    let imported_aliases: Vec<Alias> = content
+        .lines()
+        .filter_map(|line| {
+            if line.trim().starts_with("alias ") {
+                let parts: Vec<&str> = line.trim()["alias ".len()..].splitn(2, '=').collect();
+                if parts.len() == 2 {
+                    let name = parts[0].to_string();
+                    let command = parts[1].trim_matches('"').to_string();
+                    return Some(Alias { name, command });
+                }
+            }
+            None
+        })
+        .collect();
+    
+    // Merge imported aliases with existing ones (imported aliases take precedence)
+    for imported in imported_aliases {
+        // Remove existing alias with same name if exists
+        existing_aliases.retain(|a| a.name != imported.name);
+        // Add imported alias
+        existing_aliases.push(imported);
+    }
+    
+    write_aliases(existing_aliases)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
             get_aliases,
             add_alias,
             delete_alias,
             ensure_sourcing_is_setup,
-            open_terminal
+            open_terminal,
+            export_aliases,
+            import_aliases_from_content,
+            copy_alias_name
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

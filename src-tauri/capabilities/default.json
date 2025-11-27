@@ -8,6 +8,11 @@
     "opener:default",
     "core:window:allow-start-dragging",
     "dialog:default",
-    "shell:allow-execute"
+    "shell:allow-execute",
+    "fs:default",
+    "fs:allow-read-file",
+    "fs:allow-write-file",
+    "fs:allow-read-text-file",
+    "fs:allow-write-text-file"
   ]
 }
