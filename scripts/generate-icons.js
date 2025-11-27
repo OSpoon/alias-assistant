@@ -104,35 +104,68 @@ async function generatePNG(name, size, imageTool) {
 async function generateICNS(imageTool) {
   const outputPath = join(iconsDir, 'icon.icns');
   
-  if (imageTool.useImageMagick) {
-    try {
-      // 创建临时目录和不同尺寸的图标
-      const tempDir = join(iconsDir, 'icon.iconset');
-      execSync(`mkdir -p "${tempDir}"`, { stdio: 'ignore' });
-      
-      const sizes = [16, 32, 64, 128, 256, 512, 1024];
+  // macOS 需要 iconutil 工具
+  try {
+    execSync('which iconutil', { stdio: 'ignore' });
+  } catch {
+    console.warn('  ⚠️  ICNS 生成需要 macOS 系统的 iconutil 工具');
+    return false;
+  }
+
+  try {
+    // 创建临时目录和不同尺寸的图标
+    const tempDir = join(iconsDir, 'icon.iconset');
+    execSync(`rm -rf "${tempDir}"`, { stdio: 'ignore' });
+    execSync(`mkdir -p "${tempDir}"`, { stdio: 'ignore' });
+    
+    const sizes = [16, 32, 64, 128, 256, 512, 1024];
+    
+    if (imageTool.useSharp) {
+      const sharp = (await import('sharp')).default;
+      // 使用 sharp 生成所有尺寸
+      for (const size of sizes) {
+        const size2x = size * 2;
+        // 1x 尺寸
+        await sharp(sourceLogo)
+          .resize(size, size, {
+            fit: 'contain',
+            background: { r: 0, g: 0, b: 0, alpha: 0 }
+          })
+          .png()
+          .toFile(`${tempDir}/icon_${size}x${size}.png`);
+        // 2x 尺寸
+        await sharp(sourceLogo)
+          .resize(size2x, size2x, {
+            fit: 'contain',
+            background: { r: 0, g: 0, b: 0, alpha: 0 }
+          })
+          .png()
+          .toFile(`${tempDir}/icon_${size}x${size}@2x.png`);
+      }
+    } else if (imageTool.useImageMagick) {
+      // 使用 ImageMagick 生成所有尺寸
       for (const size of sizes) {
         const size2x = size * 2;
         execSync(
-          `convert "${sourceLogo}" -resize ${size}x${size} "${tempDir}/icon_${size}x${size}.png"`,
+          `convert "${sourceLogo}" -resize ${size}x${size} -background none -gravity center -extent ${size}x${size} "${tempDir}/icon_${size}x${size}.png"`,
           { stdio: 'ignore' }
         );
         execSync(
-          `convert "${sourceLogo}" -resize ${size2x}x${size2x} "${tempDir}/icon_${size}x${size}@2x.png"`,
+          `convert "${sourceLogo}" -resize ${size2x}x${size2x} -background none -gravity center -extent ${size2x}x${size2x} "${tempDir}/icon_${size}x${size}@2x.png"`,
           { stdio: 'ignore' }
         );
       }
-      
-      // 使用 iconutil 生成 ICNS (macOS only)
-      execSync(`iconutil -c icns "${tempDir}" -o "${outputPath}"`, { stdio: 'ignore' });
-      execSync(`rm -rf "${tempDir}"`, { stdio: 'ignore' });
-      return true;
-    } catch (error) {
-      console.error('  ❌ 生成 icon.icns 失败 (需要 macOS 和 iconutil)');
+    } else {
+      console.warn('  ⚠️  需要图像处理工具来生成 ICNS');
       return false;
     }
-  } else {
-    console.warn('  ⚠️  ICNS 生成需要 ImageMagick 和 macOS iconutil');
+    
+    // 使用 iconutil 生成 ICNS (macOS only)
+    execSync(`iconutil -c icns "${tempDir}" -o "${outputPath}"`, { stdio: 'ignore' });
+    execSync(`rm -rf "${tempDir}"`, { stdio: 'ignore' });
+    return true;
+  } catch (error) {
+    console.error('  ❌ 生成 icon.icns 失败:', error.message);
     return false;
   }
 }

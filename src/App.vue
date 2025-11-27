@@ -155,9 +155,11 @@ onMounted(async () => {
               <div v-if="alias && alias.name"
                 class="flex justify-between items-center p-3 bg-base-100 rounded-lg hover:bg-base-300 transition-all duration-300 shadow-sm hover:shadow-md opacity-0 animate-[fadeIn_0.4s_ease-out_forwards]"
                 :style="{ animationDelay: `${index * 50}ms` }">
-                <div class="flex flex-col">
+                <div class="flex flex-col flex-1 min-w-0">
                   <code class="text-primary font-semibold text-base">{{ alias.name }}</code>
-                  <code class="text-sm text-base-content/70 mt-1">{{ alias.command }}</code>
+                  <div class="tooltip tooltip-top" :data-tip="alias.command">
+                    <code class="text-sm text-base-content/70 mt-1 block truncate">{{ alias.command }}</code>
+                  </div>
                 </div>
                 <div class="flex flex-col gap-2">
                   <button @click="openTerminal(alias.name)" class="btn btn-info btn-xs transition-all hover:scale-105 rounded-lg">Terminal</button>
@@ -188,8 +190,8 @@ onMounted(async () => {
               <input v-model="newAliasName" type="text" placeholder="e.g., ll" class="input input-bordered w-full rounded-lg"
                 required />
               <label class="label">Command</label>
-              <input v-model="newAliasCommand" type="text" placeholder="e.g., ls -la"
-                class="input input-bordered w-full rounded-lg" required />
+              <textarea v-model="newAliasCommand" placeholder="e.g., ls -la" 
+                class="textarea textarea-bordered w-full rounded-lg min-h-[100px]" required></textarea>
             </fieldset>
             <div class="modal-action">
               <button type="button" class="btn transition-all hover:scale-105 rounded-lg" @click="addAliasModal?.close()">Cancel</button>
