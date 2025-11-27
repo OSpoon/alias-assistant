@@ -11,7 +11,6 @@
 - 🎯 **简洁的界面** - 使用 DaisyUI 和 Tailwind CSS 构建的现代化 UI
 - 🔍 **快速搜索** - 实时搜索别名，快速找到你需要的命令
 - 📋 **一键复制** - 点击 Terminal 按钮即可复制别名到剪贴板并打开新终端
-- 🎨 **主题支持** - 内置多种主题，支持自动切换
 - ⚡ **轻量快速** - 基于 Tauri，体积小、性能高
 - 🔒 **安全可靠** - 本地存储，数据完全掌控
 
@@ -21,6 +20,13 @@
 - **UI 框架**: Tailwind CSS 4 + DaisyUI 5
 - **后端**: Rust + Tauri 2
 - **包管理**: pnpm
+
+## “Alias Assistant.app”已损坏，无法打开
+
+```bash
+# 清除文件的隔离属性
+sudo xattr -c /Applications/Alias\ Assistant.app
+```
 
 ## 开发
 
