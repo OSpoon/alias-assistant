@@ -138,9 +138,9 @@ onMounted(async () => {
         </fieldset>
       </div>
 
-      <!-- Alias List Card -->
-      <div class="card bg-base-200 shadow-lg flex-1 flex flex-col min-h-0 rounded-lg">
-        <div class="card-body flex flex-col overflow-y-auto min-h-0 flex-1 scroll-smooth">
+      <!-- Alias List -->
+      <div class="bg-base-200 flex-1 flex flex-col min-h-0 rounded-lg p-4">
+        <div class="flex flex-col overflow-y-auto min-h-0 flex-1 scroll-smooth">
           <div class="space-y-2 flex flex-col">
             <div v-if="filteredAliases.length === 0"
               class="text-center text-base-content/60 flex-1 flex items-center justify-center">
