@@ -7,7 +7,7 @@ defineProps<{
   currentTheme: string;
 }>();
 
-const emit = defineEmits<{
+defineEmits<{
   'update:currentTheme': [theme: string];
   export: [];
   import: [];
