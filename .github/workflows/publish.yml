@@ -45,9 +45,18 @@ jobs:
         run: |
           mkdir -p $HOME/.tauri
           SIGNING_KEY_PATH="$HOME/.tauri/myapp.key"
-          echo "${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}" > "$SIGNING_KEY_PATH"
+          # Use printf to preserve newlines in the key
+          printf '%s\n' "${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}" > "$SIGNING_KEY_PATH"
           chmod 600 "$SIGNING_KEY_PATH"
           echo "signing_key_path=$SIGNING_KEY_PATH" >> $GITHUB_OUTPUT
+          # Verify key file exists and has content
+          if [ -f "$SIGNING_KEY_PATH" ]; then
+            echo "✅ Signing key file created successfully"
+            echo "File size: $(wc -c < "$SIGNING_KEY_PATH") bytes"
+          else
+            echo "❌ Signing key file not found!"
+            exit 1
+          fi
         shell: bash
 
       - name: Build and publish
