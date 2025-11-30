@@ -59,34 +59,16 @@ jobs:
           fi
         shell: bash
 
-      - name: Build
+      - name: Build and publish
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: alias-assistant-v__VERSION__
           releaseName: 'Alias Assistant v__VERSION__'
           releaseBody: 'See the assets to download this version and install.'
           releaseDraft: false
           prerelease: false
-          args: '--target aarch64-apple-darwin'
-
-      - name: Sign updater bundles
-        env:
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-        run: |
-          # Find updater bundles in the build output
-          BUNDLE_DIR="src-tauri/target/aarch64-apple-darwin/release/bundle"
-          if [ -d "$BUNDLE_DIR" ]; then
-            # Look for .tar.gz files (updater bundles)
-            find "$BUNDLE_DIR" -name "*.tar.gz" ! -name "*.sig" | while read -r file; do
-              if [ -f "$file" ]; then
-                echo "Signing updater bundle: $file"
-                pnpm tauri signer sign "$file" --signer ${{ steps.setup_signing.outputs.signing_key_path }}
-              fi
-            done
-          else
-            echo "⚠️  Bundle directory not found, skipping signing"
-          fi
-        shell: bash
+          args: '--target aarch64-apple-darwin --signer ${{ steps.setup_signing.outputs.signing_key_path }}'
 
