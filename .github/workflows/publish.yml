@@ -40,31 +40,12 @@ jobs:
       - name: install frontend dependencies
         run: pnpm install
 
-      - name: Setup signing key
-        id: setup_signing
-        run: |
-          mkdir -p $HOME/.tauri
-          SIGNING_KEY_PATH="$HOME/.tauri/myapp.key"
-          # Use printf to preserve newlines in the key
-          printf '%s\n' "${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}" > "$SIGNING_KEY_PATH"
-          chmod 600 "$SIGNING_KEY_PATH"
-          echo "signing_key_path=$SIGNING_KEY_PATH" >> $GITHUB_OUTPUT
-          # Verify key file exists and has content
-          if [ -f "$SIGNING_KEY_PATH" ]; then
-            echo "✅ Signing key file created successfully"
-            echo "File size: $(wc -c < "$SIGNING_KEY_PATH") bytes"
-          else
-            echo "❌ Signing key file not found!"
-            exit 1
-          fi
-        shell: bash
-
       - name: Build and publish
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_PRIVATE_KEY_PATH: ${{ steps.setup_signing.outputs.signing_key_path }}
-          TAURI_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: alias-assistant-v__VERSION__
           releaseName: 'Alias Assistant v__VERSION__'

@@ -130,9 +130,20 @@ pnpm run icons:generate
    - 确认 `plugins.updater.endpoints` 中的 GitHub 仓库 URL 正确
 
 3. **构建签名版本**：
+   
+   使用 `TAURI_SIGNING_PRIVATE_KEY` 环境变量设置私钥内容：
    ```bash
-   TAURI_PRIVATE_KEY_PATH=~/.tauri/myapp.key pnpm tauri build
+   TAURI_SIGNING_PRIVATE_KEY="$(cat ~/.tauri/myapp.key)" pnpm tauri build
    ```
+   
+   如果私钥有密码保护，还需要设置：
+   ```bash
+   TAURI_SIGNING_PRIVATE_KEY="$(cat ~/.tauri/myapp.key)"
+   TAURI_SIGNING_PRIVATE_KEY_PASSWORD="your-password"
+   pnpm tauri build
+   ```
+   
+   **注意**：只支持使用 `TAURI_SIGNING_PRIVATE_KEY` 环境变量，不支持 `TAURI_PRIVATE_KEY_PATH`。
 
 4. **发布更新**：
    - 使用 GitHub Actions 自动构建和发布时，确保使用相同的密钥对签名
@@ -142,7 +153,7 @@ pnpm run icons:generate
    - 应用会自动从配置的 endpoint 检查更新
    - 如果遇到更新检查失败，请检查：
      - `tauri.conf.json` 中 `bundle.createUpdaterArtifacts` 是否为 `true`
-     - 构建时是否正确使用了签名密钥（通过 `TAURI_PRIVATE_KEY_PATH` 环境变量）
+     - 构建时是否正确使用了签名密钥（通过 `TAURI_SIGNING_PRIVATE_KEY` 环境变量）
      - GitHub Actions 工作流是否成功完成
      - Release 中是否包含 `latest.json` 文件
      - `plugins.updater.endpoints` 配置的 URL 是否正确
