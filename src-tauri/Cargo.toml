@@ -1,6 +1,6 @@
 [package]
 name = "alias-assistant"
-version = "0.2.2"
+version = "0.2.3"
 description = "Alias Assistant - Manage your shell aliases with ease"
 authors = ["osp"]
 edition = "2021"
