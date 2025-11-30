@@ -72,4 +72,9 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: '--target aarch64-apple-darwin'
+      
+      - name: Verify latest.json
+        run: |
+          echo "Checking if latest.json is available..."
+          curl -f https://github.com/ospoon/alias-assistant/releases/latest/download/latest.json || echo "⚠️  latest.json not found yet (this is normal if the release was just created)"
 

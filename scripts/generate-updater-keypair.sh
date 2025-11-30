@@ -104,6 +104,6 @@ else
     echo "1. Update 'pubkey' in src-tauri/tauri.conf.json with the public key above"
     echo "2. Keep ~/.tauri/myapp.key secure and never commit it to git"
     echo "3. Use this keypair when building releases with:"
-    echo "   pnpm tauri build --signer ~/.tauri/myapp.key"
+    echo "   TAURI_PRIVATE_KEY_PATH=~/.tauri/myapp.key pnpm tauri build"
 fi
 

@@ -131,12 +131,17 @@ pnpm run icons:generate
 
 3. **构建签名版本**：
    ```bash
-   pnpm tauri build --signer ~/.tauri/myapp.key
+   TAURI_PRIVATE_KEY_PATH=~/.tauri/myapp.key pnpm tauri build
    ```
 
 4. **发布更新**：
    - 使用 GitHub Actions 自动构建和发布时，确保使用相同的密钥对签名
+   - `tauri-action` 会自动生成 `latest.json` 文件并上传到 `/releases/latest/download/latest.json`
    - 应用会自动从 GitHub Releases 检查更新
+   - 如果遇到 404 错误，请检查：
+     - 构建时是否正确使用了签名密钥
+     - GitHub Actions 工作流是否成功完成
+     - `latest.json` 文件是否已上传到最新版本的 Release 中
 
 ## 项目结构
 
