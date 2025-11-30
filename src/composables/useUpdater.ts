@@ -53,23 +53,37 @@ export function useUpdater() {
     try {
       status.value.downloading = true;
       status.value.error = null;
+      status.value.progress = 0;
       
       // Download and install with progress tracking
       // Note: downloadAndInstall will automatically relaunch the app after installation
+      // On Windows: app exits before installation
+      // On macOS/Linux: app restarts automatically after installation
       await updater.downloadAndInstall((event: DownloadEvent) => {
-        if (event.event === 'Progress') {
-          // Calculate progress percentage if we have content length
-          // For now, just show that download is in progress
-          status.value.progress = Math.min(status.value.progress + 5, 95);
+        if (event.event === 'Started') {
+          status.value.progress = 5;
+        } else if (event.event === 'Progress') {
+          // Increment progress gradually to show activity
+          // The actual progress depends on the download size
+          if (event.data?.chunkLength) {
+            status.value.progress = Math.min(status.value.progress + 2, 95);
+          }
         } else if (event.event === 'Finished') {
           status.value.progress = 100;
+          // At this point, installation is complete
+          // The app will restart automatically on macOS/Linux
+          // On Windows, the app already exited before installation
         }
       });
       
-      // App will automatically relaunch after installation
+      // If we reach here (unlikely on most platforms),
+      // the installation completed and restart should happen automatically
+      // Give a brief moment for the restart process
+      await new Promise(resolve => setTimeout(resolve, 500));
     } catch (error: any) {
       status.value.error = error.message || 'Failed to install update';
       status.value.downloading = false;
+      status.value.progress = 0;
       throw error;
     }
   }
