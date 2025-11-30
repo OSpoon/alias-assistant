@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import { ask, save, open } from "@tauri-apps/plugin-dialog";
 import { writeTextFile, readTextFile } from "@tauri-apps/plugin-fs";
 import type { Alias } from "./types/alias";
@@ -9,12 +10,18 @@ import SearchBar from "./components/SearchBar.vue";
 import AliasList from "./components/AliasList.vue";
 import AddAliasModal from "./components/AddAliasModal.vue";
 import SettingsModal from "./components/SettingsModal.vue";
+import { useUpdater } from "./composables/useUpdater";
 
 const aliases = ref<Alias[]>([]);
 const showReloadHint = ref(false);
 const addAliasModal = ref<InstanceType<typeof AddAliasModal> | null>(null);
 const configModal = ref<InstanceType<typeof SettingsModal> | null>(null);
 const searchQuery = ref("");
+
+// Update management
+const { status, checkForUpdate, installUpdate } = useUpdater();
+const showUpdateToast = ref(false);
+const updateToastMessage = ref("");
 
 // Theme management
 const themes = [
@@ -168,6 +175,47 @@ async function importAliases() {
   }
 }
 
+// Handle update check from menu
+async function handleUpdateCheck() {
+  try {
+    const hasUpdate = await checkForUpdate();
+    if (hasUpdate) {
+      updateToastMessage.value = `Update available: v${status.value.version}`;
+      showUpdateToast.value = true;
+      setTimeout(() => {
+        showUpdateToast.value = false;
+      }, 5000);
+      
+      // Ask user if they want to install
+      const confirmed = await ask(
+        `A new version (v${status.value.version}) is available. Would you like to install it now?`,
+        {
+          title: "Update Available",
+          kind: "info",
+        }
+      );
+      
+      if (confirmed) {
+        await installUpdate();
+      }
+    } else {
+      updateToastMessage.value = "You are using the latest version";
+      showUpdateToast.value = true;
+      setTimeout(() => {
+        showUpdateToast.value = false;
+      }, 3000);
+    }
+  } catch (error: any) {
+    updateToastMessage.value = error.message || "Failed to check for updates";
+    showUpdateToast.value = true;
+    setTimeout(() => {
+      showUpdateToast.value = false;
+    }, 3000);
+  }
+}
+
+let unlistenCheckUpdate: (() => void) | null = null;
+
 onMounted(async () => {
   loadTheme();
   await fetchAliases();
@@ -177,6 +225,17 @@ onMounted(async () => {
     console.error("Failed to ensure sourcing setup:", error);
     alert(`Setup failed: ${error}`);
   }
+  
+  // Listen for menu-triggered update check
+  unlistenCheckUpdate = await listen("check-update", () => {
+    handleUpdateCheck();
+  });
+});
+
+onUnmounted(() => {
+  if (unlistenCheckUpdate) {
+    unlistenCheckUpdate();
+  }
 });
 </script>
 
@@ -184,6 +243,7 @@ onMounted(async () => {
   <div :data-theme="currentTheme" class="h-screen flex flex-col bg-base-100 overflow-hidden">
     <main class="flex flex-col flex-1 p-4 min-h-0">
       <ToastNotification :show="showReloadHint" @close="showReloadHint = false" />
+      <ToastNotification :show="showUpdateToast" :message="updateToastMessage" @close="showUpdateToast = false" />
 
       <div class="flex justify-between items-center mb-4">
         <h1 class="text-3xl font-bold text-primary">Alias Assistant ✨</h1>

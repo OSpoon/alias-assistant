@@ -4,6 +4,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::process::Command;
 use serde::{Deserialize, Serialize};
+use tauri::menu::{Menu, MenuItem};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct Alias {
@@ -351,8 +352,40 @@ pub fn run() {
             import_aliases_from_content,
             copy_alias_name
         ])
-        .setup(|_app| {
-            // Update checking will be handled from the frontend
+        .setup(|app| {
+            #[cfg(target_os = "macos")]
+            {
+                use tauri::{Emitter, Manager};
+                
+                let check_update = MenuItem::with_id(app, "check-update", "Check for Updates...", true, None::<&str>)?;
+                let separator = MenuItem::with_id(app, "separator", "", true, None::<&str>)?;
+                let quit = MenuItem::with_id(app, "quit", "Quit Alias Assistant", true, None::<&str>)?;
+                
+                let menu = Menu::with_items(app, &[
+                    &check_update,
+                    &separator,
+                    &quit,
+                ])?;
+                
+                app.set_menu(menu)?;
+                
+                app.on_menu_event(|_app, event| {
+                    match event.id().as_ref() {
+                        "check-update" => {
+                            // Emit event to frontend to trigger update check
+                            if let Some(window) = _app.webview_windows().get("main") {
+                                if let Err(e) = window.emit("check-update", ()) {
+                                    eprintln!("Failed to emit check-update event: {}", e);
+                                }
+                            }
+                        }
+                        "quit" => {
+                            std::process::exit(0);
+                        }
+                        _ => {}
+                    }
+                });
+            }
             Ok(())
         })
         .run(tauri::generate_context!())
