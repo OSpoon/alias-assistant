@@ -14,6 +14,7 @@
 - 🖥️ **快速打开终端** - 点击 Terminal 按钮复制别名并打开新终端窗口
 - 🎨 **多主题支持** - 内置 5 款精美主题（Light、Dark、Forest、Synthwave、Dracula）
 - 💾 **导入/导出** - 支持导入和导出别名文件，方便备份和迁移
+- 🔄 **自动更新** - 内置版本检测和自动更新功能，保持应用最新
 - ⚡ **轻量快速** - 基于 Tauri，体积小、性能高
 - 🔒 **安全可靠** - 本地存储，数据完全掌控
 - 🧩 **组件化架构** - 模块化设计，易于维护和扩展
@@ -80,6 +81,7 @@ pnpm run tauri:build:macos:app
 点击右上角的设置按钮，可以：
 
 - **切换主题**：选择 5 款内置主题之一，主题会自动保存
+- **检查更新**：手动检查应用更新，如有新版本可一键安装
 - **导出别名**：将当前所有别名导出为 `.sh` 文件
 - **导入别名**：从 `.sh` 文件导入别名（同名别名会被替换）
 
@@ -109,6 +111,32 @@ pnpm run version:sync
 # 从项目根目录的 logo.png 生成所有必需的图标格式和尺寸
 pnpm run icons:generate
 ```
+
+### 配置自动更新
+
+应用支持通过 GitHub Releases 自动更新。配置步骤：
+
+1. **生成更新密钥对**：
+   ```bash
+   ./scripts/generate-updater-keypair.sh
+   ```
+   或者手动运行：
+   ```bash
+   pnpm tauri signer generate -w ~/.tauri/myapp.key
+   ```
+
+2. **更新配置**：
+   - 将生成的公钥添加到 `src-tauri/tauri.conf.json` 的 `plugins.updater.pubkey` 字段
+   - 确认 `plugins.updater.endpoints` 中的 GitHub 仓库 URL 正确
+
+3. **构建签名版本**：
+   ```bash
+   pnpm tauri build --signer ~/.tauri/myapp.key
+   ```
+
+4. **发布更新**：
+   - 使用 GitHub Actions 自动构建和发布时，确保使用相同的密钥对签名
+   - 应用会自动从 GitHub Releases 检查更新
 
 ## 项目结构
 

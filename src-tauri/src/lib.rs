@@ -340,6 +340,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             get_aliases,
             add_alias,
@@ -350,6 +351,10 @@ pub fn run() {
             import_aliases_from_content,
             copy_alias_name
         ])
+        .setup(|_app| {
+            // Update checking will be handled from the frontend
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
