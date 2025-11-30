@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import { check, type Update, type DownloadEvent } from '@tauri-apps/plugin-updater';
+import { invoke } from '@tauri-apps/api/core';
 
 export interface UpdateStatus {
   available: boolean;
@@ -71,15 +72,16 @@ export function useUpdater() {
         } else if (event.event === 'Finished') {
           status.value.progress = 100;
           // At this point, installation is complete
-          // The app will restart automatically on macOS/Linux
-          // On Windows, the app already exited before installation
+          // We need to manually restart the app
         }
       });
       
-      // If we reach here (unlikely on most platforms),
-      // the installation completed and restart should happen automatically
-      // Give a brief moment for the restart process
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Installation completed, now restart the app
+      // Give a brief moment for the installation to fully complete
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Restart the application to apply the update
+      await invoke('restart_app');
     } catch (error: any) {
       status.value.error = error.message || 'Failed to install update';
       status.value.downloading = false;
