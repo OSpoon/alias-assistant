@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, Teleport } from 'vue';
+import { ref, computed } from 'vue';
 import ThemeSelector from './ThemeSelector.vue';
 import { useUpdater } from '../composables/useUpdater';
 import ToastNotification from './ToastNotification.vue';
