@@ -41,10 +41,13 @@ jobs:
         run: pnpm install
 
       - name: Setup signing key
+        id: setup_signing
         run: |
-          mkdir -p ~/.tauri
-          echo "${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}" > ~/.tauri/myapp.key
-          chmod 600 ~/.tauri/myapp.key
+          mkdir -p $HOME/.tauri
+          SIGNING_KEY_PATH="$HOME/.tauri/myapp.key"
+          echo "${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}" > "$SIGNING_KEY_PATH"
+          chmod 600 "$SIGNING_KEY_PATH"
+          echo "signing_key_path=$SIGNING_KEY_PATH" >> $GITHUB_OUTPUT
         shell: bash
 
       - name: Build and publish
@@ -58,5 +61,5 @@ jobs:
           releaseBody: 'See the assets to download this version and install.'
           releaseDraft: false
           prerelease: false
-          args: '--target aarch64-apple-darwin --signer ~/.tauri/myapp.key'
+          args: '--target aarch64-apple-darwin --signer ${{ steps.setup_signing.outputs.signing_key_path }}'
 
