@@ -136,12 +136,16 @@ pnpm run icons:generate
 
 4. **发布更新**：
    - 使用 GitHub Actions 自动构建和发布时，确保使用相同的密钥对签名
-   - `tauri-action` 会自动生成 `latest.json` 文件并上传到 `/releases/latest/download/latest.json`
-   - 应用会自动从 GitHub Releases 检查更新
-   - 如果遇到 404 错误，请检查：
-     - 构建时是否正确使用了签名密钥
+   - 确保 `tauri.conf.json` 中设置了 `bundle.createUpdaterArtifacts: true`
+   - `tauri-action` 会自动生成更新工件（包括 `.app.tar.gz`、`.sig` 和 `latest.json`）并上传到 GitHub Release
+   - `latest.json` 文件会自动上传到每个版本的 Release 中，可通过 `/releases/latest/download/latest.json` 访问
+   - 应用会自动从配置的 endpoint 检查更新
+   - 如果遇到更新检查失败，请检查：
+     - `tauri.conf.json` 中 `bundle.createUpdaterArtifacts` 是否为 `true`
+     - 构建时是否正确使用了签名密钥（通过 `TAURI_PRIVATE_KEY_PATH` 环境变量）
      - GitHub Actions 工作流是否成功完成
-     - `latest.json` 文件是否已上传到最新版本的 Release 中
+     - Release 中是否包含 `latest.json` 文件
+     - `plugins.updater.endpoints` 配置的 URL 是否正确
 
 ## 项目结构
 
