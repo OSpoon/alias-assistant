@@ -112,51 +112,15 @@ pnpm run version:sync
 pnpm run icons:generate
 ```
 
-### 配置自动更新
+### 自动更新
 
-应用支持通过 GitHub Releases 自动更新。配置步骤：
+应用支持通过 GitHub Releases 自动更新。首次配置：
 
-1. **生成更新密钥对**：
-   ```bash
-   ./scripts/generate-updater-keypair.sh
-   ```
-   或者手动运行：
-   ```bash
-   pnpm tauri signer generate -w ~/.tauri/myapp.key
-   ```
+1. 生成更新密钥对：`./scripts/generate-updater-keypair.sh`
+2. 将公钥添加到 `src-tauri/tauri.conf.json` 的 `plugins.updater.pubkey` 字段
+3. 在 GitHub Secrets 中设置 `TAURI_SIGNING_PRIVATE_KEY`（私钥内容）和 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`（如有密码）
 
-2. **更新配置**：
-   - 将生成的公钥添加到 `src-tauri/tauri.conf.json` 的 `plugins.updater.pubkey` 字段
-   - 确认 `plugins.updater.endpoints` 中的 GitHub 仓库 URL 正确
-
-3. **构建签名版本**：
-   
-   使用 `TAURI_SIGNING_PRIVATE_KEY` 环境变量设置私钥内容：
-   ```bash
-   TAURI_SIGNING_PRIVATE_KEY="$(cat ~/.tauri/myapp.key)" pnpm tauri build
-   ```
-   
-   如果私钥有密码保护，还需要设置：
-   ```bash
-   TAURI_SIGNING_PRIVATE_KEY="$(cat ~/.tauri/myapp.key)"
-   TAURI_SIGNING_PRIVATE_KEY_PASSWORD="your-password"
-   pnpm tauri build
-   ```
-   
-   **注意**：只支持使用 `TAURI_SIGNING_PRIVATE_KEY` 环境变量，不支持 `TAURI_PRIVATE_KEY_PATH`。
-
-4. **发布更新**：
-   - 使用 GitHub Actions 自动构建和发布时，确保使用相同的密钥对签名
-   - 确保 `tauri.conf.json` 中设置了 `bundle.createUpdaterArtifacts: true`
-   - `tauri-action` 会自动生成更新工件（包括 `.app.tar.gz`、`.sig` 和 `latest.json`）并上传到 GitHub Release
-   - `latest.json` 文件会自动上传到每个版本的 Release 中，可通过 `/releases/latest/download/latest.json` 访问
-   - 应用会自动从配置的 endpoint 检查更新
-   - 如果遇到更新检查失败，请检查：
-     - `tauri.conf.json` 中 `bundle.createUpdaterArtifacts` 是否为 `true`
-     - 构建时是否正确使用了签名密钥（通过 `TAURI_SIGNING_PRIVATE_KEY` 环境变量）
-     - GitHub Actions 工作流是否成功完成
-     - Release 中是否包含 `latest.json` 文件
-     - `plugins.updater.endpoints` 配置的 URL 是否正确
+GitHub Actions 会自动构建、签名并发布更新。应用会自动检测并提示用户更新。
 
 ## 项目结构
 
