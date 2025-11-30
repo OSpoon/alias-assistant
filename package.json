@@ -15,7 +15,14 @@
     "version:patch": "npm version patch && npm run version:sync",
     "version:minor": "npm version minor && npm run version:sync",
     "version:major": "npm version major && npm run version:sync",
-    "icons:generate": "node scripts/generate-icons.js"
+    "icons:generate": "node scripts/generate-icons.js",
+    "lint": "vue-tsc --noEmit",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,vue}": [
+      "vue-tsc --noEmit --skipLibCheck"
+    ]
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.17",
@@ -32,11 +39,13 @@
     "@vitejs/plugin-vue": "^5.2.1",
     "autoprefixer": "^10.4.22",
     "daisyui": "^5.5.5",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "postcss": "^8.5.6",
+    "sharp": "^0.33.5",
     "tailwindcss": "^4.1.17",
     "typescript": "~5.6.2",
     "vite": "^6.0.3",
-    "vue-tsc": "^2.1.10",
-    "sharp": "^0.33.5"
+    "vue-tsc": "^2.1.10"
   }
 }
