@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { invoke } from "@tauri-apps/api/core";
 import { ask, save, open } from "@tauri-apps/plugin-dialog";
 import { writeTextFile, readTextFile } from "@tauri-apps/plugin-fs";
@@ -9,6 +9,7 @@ import SearchBar from "./components/SearchBar.vue";
 import AliasList from "./components/AliasList.vue";
 import AddAliasModal from "./components/AddAliasModal.vue";
 import SettingsModal from "./components/SettingsModal.vue";
+import { Button } from "@/components/ui/button";
 
 const aliases = ref<Alias[]>([]);
 const showReloadHint = ref(false);
@@ -18,14 +19,13 @@ const searchQuery = ref("");
 
 // Theme management
 const themes = [
-  { name: "light", label: "Light" },
-  { name: "dark", label: "Dark" },
-  { name: "forest", label: "Forest" },
-  { name: "synthwave", label: "Synthwave" },
-  { name: "dracula", label: "Dracula" },
+  { name: "neutral", label: "Neutral" },
+  { name: "zinc", label: "Zinc" },
+  { name: "gray", label: "Gray" },
+  { name: "slate", label: "Slate" },
 ];
 
-const currentTheme = ref<string>("forest");
+const currentTheme = ref<string>("slate");
 
 async function fetchAliases() {
   try {
@@ -87,16 +87,36 @@ async function copyAliasName(aliasName: string) {
   }
 }
 
-// Theme functions
+// Theme management
 function setTheme(theme: string) {
   currentTheme.value = theme;
   const html = document.documentElement;
+  // Remove all theme attributes first
+  html.removeAttribute("data-theme");
+  // Set the new theme
   html.setAttribute("data-theme", theme);
   localStorage.setItem("alias-assistant-theme", theme);
+  
+  // Update dark mode based on system preference
+  updateDarkMode();
+}
+
+// System theme detection for dark mode
+let mediaQuery: MediaQueryList | null = null;
+
+function updateDarkMode() {
+  const html = document.documentElement;
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  
+  if (prefersDark) {
+    html.classList.add('dark');
+  } else {
+    html.classList.remove('dark');
+  }
 }
 
 function loadTheme() {
-  const savedTheme = localStorage.getItem("alias-assistant-theme") || "forest";
+  const savedTheme = localStorage.getItem("alias-assistant-theme") || "slate";
   setTheme(savedTheme);
 }
 
@@ -169,7 +189,16 @@ async function importAliases() {
 }
 
 onMounted(async () => {
+  // Load saved theme
   loadTheme();
+  
+  // Initialize dark mode based on system preference
+  updateDarkMode();
+  
+  // Listen for system theme changes
+  mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  mediaQuery.addEventListener('change', updateDarkMode);
+  
   await fetchAliases();
   try {
     await invoke("ensure_sourcing_is_setup");
@@ -178,25 +207,33 @@ onMounted(async () => {
     alert(`Setup failed: ${error}`);
   }
 });
+
+onBeforeUnmount(() => {
+  // Clean up event listener
+  if (mediaQuery) {
+    mediaQuery.removeEventListener('change', updateDarkMode);
+  }
+});
 </script>
 
 <template>
-  <div :data-theme="currentTheme" class="h-screen flex flex-col bg-base-100 overflow-hidden">
+  <div class="h-screen flex flex-col bg-background overflow-hidden">
     <main class="flex flex-col flex-1 p-4 min-h-0">
       <ToastNotification :show="showReloadHint" @close="showReloadHint = false" />
 
-      <div class="flex justify-between items-center mb-4">
+      <div class="flex justify-between items-center mt-2 mb-6">
         <h1 class="text-3xl font-bold text-primary">Alias Assistant ✨</h1>
-        <button 
+        <Button 
           @click="configModal?.open()" 
-          class="btn btn-ghost btn-circle"
+          variant="ghost"
+          size="icon"
           title="Settings"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
-        </button>
+        </Button>
       </div>
 
       <SearchBar v-model="searchQuery" />
@@ -211,11 +248,15 @@ onMounted(async () => {
 
       <!-- FAB to open modal -->
       <div class="fixed bottom-8 right-8">
-        <button class="btn btn-primary btn-circle btn-lg shadow-lg hover:shadow-xl transition-all hover:scale-110" @click="addAliasModal?.open()">
+        <Button 
+          class="size-14 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110" 
+          @click="addAliasModal?.open()"
+          size="icon-lg"
+        >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
-        </button>
+        </Button>
       </div>
 
       <AddAliasModal ref="addAliasModal" @submit="handleAddAlias" />

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Alias } from '../types/alias';
+import { Button } from "@/components/ui/button";
 
 defineProps<{
   alias: Alias;
@@ -17,22 +18,21 @@ defineEmits<{
   <div
     v-if="alias && alias.name"
     @click="$emit('copy', alias.name)"
-    class="flex justify-between items-center p-3 bg-base-100 rounded-lg hover:bg-base-300 transition-all duration-300 shadow-sm hover:shadow-md opacity-0 animate-[fadeIn_0.4s_ease-out_forwards] cursor-pointer"
+    class="flex justify-between items-center p-3 bg-card rounded-lg hover:bg-accent transition-all duration-300 shadow-sm hover:shadow-md opacity-0 animate-[fadeIn_0.4s_ease-out_forwards] cursor-pointer"
     :style="{ animationDelay: `${index * 50}ms` }"
+    :title="alias.command"
   >
     <div class="flex flex-col flex-1 min-w-0">
       <code class="text-primary font-semibold text-base">{{ alias.name }}</code>
-      <div class="tooltip tooltip-top" :data-tip="alias.command">
-        <code class="text-sm text-base-content/70 mt-1 block truncate">{{ alias.command }}</code>
-      </div>
+      <code class="text-sm text-muted-foreground mt-1 block truncate">{{ alias.command }}</code>
     </div>
     <div class="flex flex-col gap-2" @click.stop>
-      <button @click="$emit('openTerminal', alias.name)" class="btn btn-info btn-xs transition-all hover:scale-105 rounded-lg">
+      <Button @click="$emit('openTerminal', alias.name)" variant="outline" size="sm" class="transition-all hover:scale-105">
         Terminal
-      </button>
-      <button @click="$emit('delete', alias.name)" class="btn btn-error btn-xs transition-all hover:scale-105 rounded-lg">
+      </Button>
+      <Button @click="$emit('delete', alias.name)" variant="destructive" size="sm" class="transition-all hover:scale-105">
         Delete
-      </button>
+      </Button>
     </div>
   </div>
 </template>

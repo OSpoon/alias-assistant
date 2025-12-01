@@ -28,11 +28,11 @@ const filteredAliases = computed(() => {
 </script>
 
 <template>
-  <div class="bg-base-200 flex-1 flex flex-col min-h-0 rounded-lg p-4">
+  <div class="bg-muted/50 flex-1 flex flex-col min-h-0 rounded-lg p-4">
     <div class="flex flex-col overflow-y-auto min-h-0 flex-1 scroll-smooth">
       <div class="space-y-2 flex flex-col">
         <div v-if="filteredAliases.length === 0"
-          class="text-center text-base-content/60 flex-1 flex items-center justify-center">
+          class="text-center text-muted-foreground flex-1 flex items-center justify-center">
           <span v-if="searchQuery.trim()">
             No aliases found matching "{{ searchQuery }}"
           </span>

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+
 defineProps<{
   themes: Array<{ name: string; label: string }>;
   currentTheme: string;
@@ -11,21 +14,17 @@ defineEmits<{
 
 <template>
   <div class="mb-6">
-    <label class="label">
-      <span class="label-text font-semibold">Theme</span>
-    </label>
+    <Label class="font-semibold mb-2 block">Theme</Label>
     <div class="grid grid-cols-2 gap-2 mt-2">
-      <button
+      <Button
         v-for="theme in themes"
         :key="theme.name"
         @click="$emit('update:currentTheme', theme.name)"
-        :class="[
-          'btn btn-outline transition-all rounded-lg',
-          currentTheme === theme.name ? 'btn-primary' : ''
-        ]"
+        :variant="currentTheme === theme.name ? 'default' : 'outline'"
+        class="transition-all"
       >
         {{ theme.label }}
-      </button>
+      </Button>
     </div>
   </div>
 </template>

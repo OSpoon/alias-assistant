@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { ask } from '@tauri-apps/plugin-dialog';
-import ThemeSelector from './ThemeSelector.vue';
 import { useUpdater } from '../composables/useUpdater';
 import ToastNotification from './ToastNotification.vue';
+import ThemeSelector from './ThemeSelector.vue';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 
 defineProps<{
   themes: Array<{ name: string; label: string }>;
@@ -16,7 +20,7 @@ defineEmits<{
   import: [];
 }>();
 
-const modalRef = ref<HTMLDialogElement | null>(null);
+const open = ref(false);
 const { status, checkForUpdate, installUpdate } = useUpdater();
 const checkingUpdate = ref(false);
 const installingUpdate = ref(false);
@@ -30,12 +34,12 @@ const updateButtonText = computed(() => {
   return 'Check for Updates';
 });
 
-function open() {
-  modalRef.value?.showModal();
+function handleOpen() {
+  open.value = true;
 }
 
-function close() {
-  modalRef.value?.close();
+function handleClose() {
+  open.value = false;
 }
 
 async function handleCheckUpdate() {
@@ -116,15 +120,17 @@ async function handleInstallUpdate() {
 }
 
 defineExpose({
-  open,
-  close,
+  open: handleOpen,
+  close: handleClose,
 });
 </script>
 
 <template>
-  <dialog ref="modalRef" class="modal">
-    <div class="modal-box rounded-lg">
-      <h3 class="font-bold text-lg mb-4">Settings</h3>
+  <Dialog v-model:open="open">
+    <DialogContent class="max-w-md">
+      <DialogHeader>
+        <DialogTitle>Settings</DialogTitle>
+      </DialogHeader>
       
       <ThemeSelector
         :themes="themes"
@@ -132,70 +138,65 @@ defineExpose({
         @update:current-theme="$emit('update:currentTheme', $event)"
       />
 
-      <div class="divider"></div>
+      <Separator />
+
       <div class="mb-6">
-        <label class="label">
-          <span class="label-text font-semibold">Updates</span>
-        </label>
+        <Label class="font-semibold mb-2 block">Updates</Label>
         <div class="flex flex-col gap-2 mt-2">
-          <button
+          <Button
             @click="handleInstallUpdate"
             :disabled="checkingUpdate || installingUpdate"
-            :class="[
-              'btn transition-all hover:scale-105 rounded-lg',
-              status.available ? 'btn-primary' : 'btn-outline btn-info'
-            ]"
+            :variant="status.available ? 'default' : 'outline'"
+            class="transition-all hover:scale-105"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
             {{ updateButtonText }}
-          </button>
-          <div v-if="status.currentVersion" class="text-xs text-base-content/60 mt-1">
+          </Button>
+          <div v-if="status.currentVersion" class="text-xs text-muted-foreground mt-1">
             Current version: v{{ status.currentVersion }}
           </div>
-          <div v-if="status.error" class="text-xs text-error mt-1">
+          <div v-if="status.error" class="text-xs text-destructive mt-1">
             {{ status.error }}
           </div>
         </div>
       </div>
 
-      <div class="divider"></div>
+      <Separator />
+
       <div class="mb-6">
-        <label class="label">
-          <span class="label-text font-semibold">Alias Management</span>
-        </label>
+        <Label class="font-semibold mb-2 block">Alias Management</Label>
         <div class="flex flex-col gap-2 mt-2">
-          <button
+          <Button
             @click="$emit('export')"
-            class="btn btn-outline btn-info transition-all hover:scale-105 rounded-lg"
+            variant="outline"
+            class="transition-all hover:scale-105"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             Export Aliases
-          </button>
-          <button
+          </Button>
+          <Button
             @click="$emit('import')"
-            class="btn btn-outline btn-success transition-all hover:scale-105 rounded-lg"
+            variant="outline"
+            class="transition-all hover:scale-105"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
             </svg>
             Import Aliases
-          </button>
+          </Button>
         </div>
       </div>
 
-      <div class="modal-action">
-        <button type="button" class="btn transition-all hover:scale-105 rounded-lg" @click="close">
+      <DialogFooter>
+        <Button type="button" variant="outline" @click="handleClose">
           Close
-        </button>
-      </div>
-    </div>
-    <form method="dialog" class="modal-backdrop">
-      <button @click="close">close</button>
-    </form>
+        </Button>
+      </DialogFooter>
+    </DialogContent>
     
     <Teleport to="body">
       <ToastNotification
@@ -204,6 +205,6 @@ defineExpose({
         @close="showToast = false"
       />
     </Teleport>
-  </dialog>
+  </Dialog>
 </template>
 
