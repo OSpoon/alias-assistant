@@ -1,9 +1,8 @@
-# Alias Assistant ✨
-
-便捷的 macOS（Apple Silicon）shell 别名管理工具，使用 Tauri + Vue + TypeScript 构建。
-
 <div align="center">
-  <img src="./screenshot.png" width="40%" />
+  <img src="./logo.png" alt="Alias Assistant Logo" width="128px" />
+  <h1>Alias Assistant✨</h1>
+  <p>便捷的 macOS（Apple Silicon）shell 别名管理工具，使用 Tauri + Vue + TypeScript 构建。</p>
+  <img src="./screenshot.png" width="320px" />
 </div>
 
 ## 功能特性
@@ -26,46 +25,6 @@
 - **后端**: Rust + Tauri 2
 - **包管理**: pnpm
 
-## “Alias Assistant.app”已损坏，无法打开
-
-```bash
-# 清除文件的隔离属性
-sudo xattr -c /Applications/Alias\ Assistant.app
-```
-
-## 开发
-
-### 前置要求
-
-- [Node.js](https://nodejs.org/) (推荐使用 LTS 版本)
-- [pnpm](https://pnpm.io/)
-- [Rust](https://www.rust-lang.org/) (Tauri 会自动安装，如需手动安装请参考 [Tauri 文档](https://tauri.app/zh-cn/v1/guides/getting-started/prerequisites))
-
-### 安装依赖
-
-```bash
-pnpm install
-```
-
-### 开发模式
-
-```bash
-pnpm tauri dev
-```
-
-### 构建应用
-
-```bash
-# 构建所有平台的安装包
-pnpm run tauri:build
-
-# 仅构建 macOS App Bundle 和 DMG
-pnpm run tauri:build:macos
-
-# 仅构建 macOS App Bundle
-pnpm run tauri:build:macos:app
-```
-
 ## 使用说明
 
 ### 基本操作
@@ -85,86 +44,20 @@ pnpm run tauri:build:macos:app
 - **导出别名**：将当前所有别名导出为 `.sh` 文件
 - **导入别名**：从 `.sh` 文件导入别名（同名别名会被替换）
 
-## 版本管理
+### 常见问题
 
-项目使用统一的版本号管理，版本号会自动同步到 `package.json`、`tauri.conf.json` 和 `Cargo.toml`。
-
-### 更新版本号
+#### "Alias Assistant.app"已损坏，无法打开
 
 ```bash
-# 更新补丁版本 (0.1.0 -> 0.1.1)
-pnpm run version:patch
-
-# 更新次版本 (0.1.0 -> 0.2.0)
-pnpm run version:minor
-
-# 更新主版本 (0.1.0 -> 1.0.0)
-pnpm run version:major
-
-# 手动同步版本号
-pnpm run version:sync
+# 清除文件的隔离属性
+sudo xattr -c /Applications/Alias\ Assistant.app
 ```
 
-### 生成图标
+## 文档
 
-```bash
-# 从项目根目录的 logo.png 生成所有必需的图标格式和尺寸
-pnpm run icons:generate
-```
-
-### 自动更新
-
-应用支持通过 GitHub Releases 自动更新。首次配置：
-
-1. 生成更新密钥对：`./scripts/generate-updater-keypair.sh`
-2. 将公钥添加到 `src-tauri/tauri.conf.json` 的 `plugins.updater.pubkey` 字段
-3. 在 GitHub Secrets 中设置 `TAURI_SIGNING_PRIVATE_KEY`（私钥内容）和 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`（如有密码）
-
-GitHub Actions 会自动构建、签名并发布更新。应用会自动检测并提示用户更新。
-
-## 项目结构
-
-```
-alias-assistant/
-├── src/                           # Vue 前端代码
-│   ├── components/                # Vue 组件
-│   │   ├── AddAliasModal.vue     # 添加别名模态框
-│   │   ├── AliasItem.vue          # 别名列表项
-│   │   ├── AliasList.vue          # 别名列表
-│   │   ├── SearchBar.vue           # 搜索栏
-│   │   ├── SettingsModal.vue       # 设置模态框
-│   │   ├── ThemeSelector.vue      # 主题选择器
-│   │   └── ToastNotification.vue  # Toast 通知
-│   ├── types/                      # TypeScript 类型定义
-│   │   └── alias.ts               # 别名类型
-│   ├── App.vue                     # 主应用组件
-│   ├── main.ts                     # 入口文件
-│   └── index.css                   # 全局样式
-├── src-tauri/                      # Tauri 后端代码
-│   ├── src/
-│   │   ├── main.rs                 # Rust 入口
-│   │   └── lib.rs                  # 主要逻辑（别名管理、剪贴板、终端等）
-│   ├── capabilities/               # Tauri 权限配置
-│   │   └── default.json            # 默认权限
-│   ├── icons/                      # 应用图标
-│   ├── Cargo.toml                  # Rust 依赖配置
-│   └── tauri.conf.json             # Tauri 配置文件
-├── scripts/                         # 工具脚本
-│   ├── sync-version.js             # 版本号同步脚本
-│   └── generate-icons.js           # 图标生成脚本
-├── .github/                        # GitHub Actions
-│   └── workflows/
-│       └── publish.yml              # 自动化构建工作流
-└── package.json                    # Node.js 依赖配置
-```
-
-## 推荐 IDE 设置
-
-- [VS Code](https://code.visualstudio.com/) + 以下扩展：
-  - [Vue - Official](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
-  - [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode)
-  - [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+- [开发指南](docs/DEVELOPMENT.md) - 开发环境设置和项目结构
+- [发布指南](docs/RELEASE.md) - 版本管理和发布流程
 
 ## 许可证
 
-MIT
+本项目采用 [MIT 许可证](LICENSE)。
