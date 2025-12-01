@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -44,6 +44,9 @@ defineExpose({
     <DialogContent>
       <DialogHeader>
         <DialogTitle>Add New Alias</DialogTitle>
+        <DialogDescription>
+          Enter a new alias name and its corresponding command.
+        </DialogDescription>
       </DialogHeader>
       <form @submit.prevent="handleSubmit" class="flex flex-col gap-4" autocomplete="off">
         <div class="flex flex-col gap-2">

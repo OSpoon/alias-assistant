@@ -4,7 +4,7 @@ import { ask } from '@tauri-apps/plugin-dialog';
 import { useUpdater } from '../composables/useUpdater';
 import ToastNotification from './ToastNotification.vue';
 import ThemeSelector from './ThemeSelector.vue';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -130,6 +130,9 @@ defineExpose({
     <DialogContent class="max-w-md">
       <DialogHeader>
         <DialogTitle>Settings</DialogTitle>
+        <DialogDescription>
+          Configure theme, updates, and manage your aliases.
+        </DialogDescription>
       </DialogHeader>
       
       <ThemeSelector
