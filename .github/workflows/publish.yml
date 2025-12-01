@@ -49,7 +49,25 @@ jobs:
         with:
           tagName: alias-assistant-v__VERSION__
           releaseName: 'Alias Assistant v__VERSION__'
-          releaseBody: 'See the assets to download this version and install.'
+          releaseBody: |
+            ## Alias Assistant v__VERSION__
+            
+            ### 📦 下载和安装
+            
+            1. 下载 `alias-assistant_*_aarch64.app.tar.gz` 文件
+            2. 解压文件：`tar -xzf alias-assistant_*_aarch64.app.tar.gz`
+            3. 将 `Alias Assistant.app` 拖拽到 `/Applications` 文件夹
+            4. 首次打开时，如果提示"已损坏"，请右键点击应用 → 选择"打开"
+            
+            ### 📝 系统要求
+            
+            - macOS (Apple Silicon)
+            - macOS 10.13 或更高版本
+            
+            ### 🔗 相关链接
+            
+            - [项目主页](https://github.com/ospoon/alias-assistant)
+            - [使用说明](https://github.com/ospoon/alias-assistant#使用说明)
           releaseDraft: false
           prerelease: false
           args: '--target aarch64-apple-darwin'
