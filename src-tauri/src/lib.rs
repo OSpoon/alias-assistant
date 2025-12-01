@@ -333,6 +333,11 @@ fn import_aliases_from_content(content: String) -> Result<(), String> {
     write_aliases(existing_aliases)
 }
 
+#[tauri::command]
+fn restart_app(app: tauri::AppHandle) {
+    app.restart();
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -349,10 +354,10 @@ pub fn run() {
             open_terminal,
             export_aliases,
             import_aliases_from_content,
-            copy_alias_name
+            copy_alias_name,
+            restart_app
         ])
         .setup(|_app| {
-            // Update checking will be handled from the frontend
             Ok(())
         })
         .run(tauri::generate_context!())

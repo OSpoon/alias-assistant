@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, Teleport } from 'vue';
+import { ref, computed } from 'vue';
+import { ask } from '@tauri-apps/plugin-dialog';
 import ThemeSelector from './ThemeSelector.vue';
 import { useUpdater } from '../composables/useUpdater';
 import ToastNotification from './ToastNotification.vue';
@@ -69,19 +70,48 @@ async function handleInstallUpdate() {
     return;
   }
 
+  // Confirm installation
+  const confirmed = await ask(
+    `A new version (v${status.value.version}) is available. The app will restart after installation. Continue?`,
+    {
+      title: "Install Update",
+      kind: "info",
+    }
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
   installingUpdate.value = true;
   showToast.value = false;
   
   try {
+    // downloadAndInstall will automatically restart the app after installation
+    // On Windows, the app will exit automatically before installation
+    // On macOS/Linux, the app will restart automatically after installation
     await installUpdate();
-    // If install succeeds, the app will relaunch, so we won't reach here
+    
+    // If we reach here (which is unlikely on most platforms),
+    // the update installation completed and restart should happen automatically
+    toastMessage.value = 'Update installed successfully. Restarting...';
+    showToast.value = true;
+    
+    // Give a brief moment for the restart process to begin
+    // Most platforms will restart automatically, so this is just a fallback message
+    setTimeout(() => {
+      // If we're still here after a delay, something might be wrong
+      // But typically the app will have restarted by now
+    }, 1000);
   } catch (error: any) {
     toastMessage.value = error.message || 'Failed to install update';
     showToast.value = true;
     setTimeout(() => {
       showToast.value = false;
-    }, 3000);
+    }, 5000);
     installingUpdate.value = false;
+    status.value.downloading = false;
+    status.value.progress = 0;
   }
 }
 

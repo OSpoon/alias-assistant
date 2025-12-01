@@ -112,31 +112,15 @@ pnpm run version:sync
 pnpm run icons:generate
 ```
 
-### 配置自动更新
+### 自动更新
 
-应用支持通过 GitHub Releases 自动更新。配置步骤：
+应用支持通过 GitHub Releases 自动更新。首次配置：
 
-1. **生成更新密钥对**：
-   ```bash
-   ./scripts/generate-updater-keypair.sh
-   ```
-   或者手动运行：
-   ```bash
-   pnpm tauri signer generate -w ~/.tauri/myapp.key
-   ```
+1. 生成更新密钥对：`./scripts/generate-updater-keypair.sh`
+2. 将公钥添加到 `src-tauri/tauri.conf.json` 的 `plugins.updater.pubkey` 字段
+3. 在 GitHub Secrets 中设置 `TAURI_SIGNING_PRIVATE_KEY`（私钥内容）和 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`（如有密码）
 
-2. **更新配置**：
-   - 将生成的公钥添加到 `src-tauri/tauri.conf.json` 的 `plugins.updater.pubkey` 字段
-   - 确认 `plugins.updater.endpoints` 中的 GitHub 仓库 URL 正确
-
-3. **构建签名版本**：
-   ```bash
-   pnpm tauri build --signer ~/.tauri/myapp.key
-   ```
-
-4. **发布更新**：
-   - 使用 GitHub Actions 自动构建和发布时，确保使用相同的密钥对签名
-   - 应用会自动从 GitHub Releases 检查更新
+GitHub Actions 会自动构建、签名并发布更新。应用会自动检测并提示用户更新。
 
 ## 项目结构
 
