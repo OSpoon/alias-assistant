@@ -32,4 +32,6 @@ tauri-plugin-dialog = "2.4.2"
 tauri-plugin-shell = "2.3.3"
 tauri-plugin-fs = "2"
 tauri-plugin-updater = "2"
+reqwest = { version = "0.12", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
 

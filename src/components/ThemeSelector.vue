@@ -14,7 +14,6 @@ defineEmits<{
 
 <template>
   <div class="mb-6">
-    <Label class="font-semibold mb-2 block">Theme</Label>
     <div class="grid grid-cols-2 gap-2 mt-2">
       <Button
         v-for="theme in themes"
