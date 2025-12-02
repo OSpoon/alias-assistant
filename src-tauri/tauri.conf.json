@@ -50,9 +50,7 @@
       "signingIdentity": null,
       "providerShortName": null,
       "entitlements": null,
-      "infoPlist": {
-        "LSApplicationCategoryType": "public.app-category.utilities"
-      }
+      "infoPlist": "Info.plist"
     }
   }
 }

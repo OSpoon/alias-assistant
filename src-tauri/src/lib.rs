@@ -1,12 +1,17 @@
 // Business logic modules
 mod alias;
 mod system;
+mod gist;
 
 // Re-export commands for use in invoke_handler
 use alias::{
     add_alias, delete_alias, export_aliases, get_aliases, import_aliases_from_content,
 };
 use system::{copy_alias_name, ensure_sourcing_is_setup, open_terminal, restart_app};
+use gist::{
+    get_gist_id, get_gist_token, set_gist_id, set_gist_token, sync_aliases_from_gist,
+    sync_aliases_to_gist,
+};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -25,7 +30,13 @@ pub fn run() {
             export_aliases,
             import_aliases_from_content,
             copy_alias_name,
-            restart_app
+            restart_app,
+            get_gist_token,
+            set_gist_token,
+            get_gist_id,
+            set_gist_id,
+            sync_aliases_to_gist,
+            sync_aliases_from_gist
         ])
         .setup(|_app| {
             Ok(())

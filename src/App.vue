@@ -1,126 +1,15 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { provide } from "vue";
+import { RouterView } from "vue-router";
 import { invoke } from "@tauri-apps/api/core";
 import { ask, save, open } from "@tauri-apps/plugin-dialog";
 import { writeTextFile, readTextFile } from "@tauri-apps/plugin-fs";
-import type { Alias } from "./types/alias";
-import ToastNotification from "./components/ToastNotification.vue";
-import SearchBar from "./components/SearchBar.vue";
-import AliasList from "./components/AliasList.vue";
-import AddAliasModal from "./components/AddAliasModal.vue";
-import SettingsModal from "./components/SettingsModal.vue";
-import { Button } from "@/components/ui/button";
+import { useTheme } from "./composables/useTheme";
 
-const aliases = ref<Alias[]>([]);
-const showReloadHint = ref(false);
-const addAliasModal = ref<InstanceType<typeof AddAliasModal> | null>(null);
-const configModal = ref<InstanceType<typeof SettingsModal> | null>(null);
-const searchQuery = ref("");
+// Initialize theme
+const { themes, currentTheme, setTheme } = useTheme();
 
-// Theme management
-const themes = [
-  { name: "neutral", label: "Neutral" },
-  { name: "zinc", label: "Zinc" },
-  { name: "gray", label: "Gray" },
-  { name: "slate", label: "Slate" },
-];
-
-const currentTheme = ref<string>("slate");
-
-async function fetchAliases() {
-  try {
-    const result = await invoke("get_aliases");
-    console.log("Aliases fetched:", result);
-    aliases.value = result as Alias[];
-  } catch (error) {
-    console.error("Failed to fetch aliases:", error);
-  }
-}
-
-async function handleAddAlias(name: string, command: string) {
-  try {
-    await invoke("add_alias", { name, command });
-    showReloadHint.value = true;
-    setTimeout(() => { showReloadHint.value = false; }, 2000);
-    await fetchAliases();
-  } catch (error) {
-    console.error("Failed to add alias:", error);
-    alert(`Failed to add alias: ${error}`);
-  }
-}
-
-async function deleteAlias(name: string) {
-  const confirmed = await ask(
-    `Are you sure you want to delete the alias "${name}"?`,
-    {
-      title: "Delete Alias",
-    }
-  );
-  if (!confirmed) {
-    return;
-  }
-  try {
-    await invoke("delete_alias", { name });
-    showReloadHint.value = true;
-    setTimeout(() => { showReloadHint.value = false; }, 2000);
-    await fetchAliases();
-  } catch (error) {
-    console.error("Failed to delete alias:", error);
-  }
-}
-
-async function openTerminal(aliasName: string) {
-  try {
-    await invoke("open_terminal", { aliasName });
-  } catch (error) {
-    console.error("Failed to open terminal:", error);
-    alert(`Failed to open terminal: ${error}`);
-  }
-}
-
-async function copyAliasName(aliasName: string) {
-  try {
-    await invoke("copy_alias_name", { aliasName });
-  } catch (error) {
-    console.error("Failed to copy alias name:", error);
-    alert(`Failed to copy alias name: ${error}`);
-  }
-}
-
-// Theme management
-function setTheme(theme: string) {
-  currentTheme.value = theme;
-  const html = document.documentElement;
-  // Remove all theme attributes first
-  html.removeAttribute("data-theme");
-  // Set the new theme
-  html.setAttribute("data-theme", theme);
-  localStorage.setItem("alias-assistant-theme", theme);
-  
-  // Update dark mode based on system preference
-  updateDarkMode();
-}
-
-// System theme detection for dark mode
-let mediaQuery: MediaQueryList | null = null;
-
-function updateDarkMode() {
-  const html = document.documentElement;
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  
-  if (prefersDark) {
-    html.classList.add('dark');
-  } else {
-    html.classList.remove('dark');
-  }
-}
-
-function loadTheme() {
-  const savedTheme = localStorage.getItem("alias-assistant-theme") || "slate";
-  setTheme(savedTheme);
-}
-
-// Export aliases
+// Export aliases function
 async function exportAliases() {
   try {
     const content = await invoke<string>("export_aliases");
@@ -148,7 +37,7 @@ async function exportAliases() {
   }
 }
 
-// Import aliases
+// Import aliases function
 async function importAliases() {
   try {
     const filePath = await open({
@@ -179,7 +68,6 @@ async function importAliases() {
 
       if (confirmed) {
         await invoke("import_aliases_from_content", { content });
-        await fetchAliases();
       }
     }
   } catch (error) {
@@ -188,87 +76,18 @@ async function importAliases() {
   }
 }
 
-onMounted(async () => {
-  // Load saved theme
-  loadTheme();
-  
-  // Initialize dark mode based on system preference
-  updateDarkMode();
-  
-  // Listen for system theme changes
-  mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-  mediaQuery.addEventListener('change', updateDarkMode);
-  
-  await fetchAliases();
-  try {
-    await invoke("ensure_sourcing_is_setup");
-  } catch (error) {
-    console.error("Failed to ensure sourcing setup:", error);
-    alert(`Setup failed: ${error}`);
-  }
-});
-
-onBeforeUnmount(() => {
-  // Clean up event listener
-  if (mediaQuery) {
-    mediaQuery.removeEventListener('change', updateDarkMode);
-  }
-});
+// Provide theme and functions to child components
+provide('themes', themes);
+provide('currentTheme', currentTheme);
+provide('setTheme', setTheme);
+provide('exportAliases', exportAliases);
+provide('importAliases', importAliases);
 </script>
 
 <template>
   <div class="h-screen flex flex-col bg-background overflow-hidden">
     <main class="flex flex-col flex-1 p-4 min-h-0">
-      <ToastNotification :show="showReloadHint" @close="showReloadHint = false" />
-
-      <div class="flex justify-between items-center mt-2 mb-6">
-        <h1 class="text-3xl font-bold text-primary">Alias Assistant ✨</h1>
-        <Button 
-          @click="configModal?.open()" 
-          variant="ghost"
-          size="icon"
-          title="Settings"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-        </Button>
-      </div>
-
-      <SearchBar v-model="searchQuery" />
-
-      <AliasList
-        :aliases="aliases"
-        :search-query="searchQuery"
-        @copy="copyAliasName"
-        @open-terminal="openTerminal"
-        @delete="deleteAlias"
-      />
-
-      <!-- FAB to open modal -->
-      <div class="fixed bottom-8 right-8">
-        <Button 
-          class="size-14 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110" 
-          @click="addAliasModal?.open()"
-          size="icon-lg"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-          </svg>
-        </Button>
-      </div>
-
-      <AddAliasModal ref="addAliasModal" @submit="handleAddAlias" />
-
-      <SettingsModal
-        ref="configModal"
-        :themes="themes"
-        :current-theme="currentTheme"
-        @update:current-theme="setTheme"
-        @export="exportAliases"
-        @import="importAliases"
-      />
+      <RouterView />
     </main>
   </div>
 </template>
