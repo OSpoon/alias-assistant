@@ -14,6 +14,7 @@ const router = useRouter();
 
 const aliases = ref<Alias[]>([]);
 const showReloadHint = ref(false);
+const toastMessage = ref('');
 const addAliasModal = ref<InstanceType<typeof AddAliasModal> | null>(null);
 const searchQuery = ref("");
 
@@ -30,6 +31,7 @@ async function fetchAliases() {
 async function handleAddAlias(name: string, command: string) {
   try {
     await invoke("add_alias", { name, command });
+    toastMessage.value = `Alias "${name}" added successfully`;
     showReloadHint.value = true;
     setTimeout(() => { showReloadHint.value = false; }, 2000);
     await fetchAliases();
@@ -51,6 +53,7 @@ async function deleteAlias(name: string) {
   }
   try {
     await invoke("delete_alias", { name });
+    toastMessage.value = `Alias "${name}" deleted successfully`;
     showReloadHint.value = true;
     setTimeout(() => { showReloadHint.value = false; }, 2000);
     await fetchAliases();
@@ -90,7 +93,7 @@ onMounted(async () => {
 
 <template>
   <div class="flex flex-col flex-1 min-h-0">
-    <ToastNotification :show="showReloadHint" @close="showReloadHint = false" />
+    <ToastNotification :show="showReloadHint" :message="toastMessage" @close="showReloadHint = false" />
 
     <div class="flex justify-between items-center mt-2 mb-6">
       <h1 class="text-3xl font-bold text-primary">Alias Assistant ✨</h1>
