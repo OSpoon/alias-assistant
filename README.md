@@ -2,7 +2,8 @@
   <img src="./logo.png" alt="Alias Assistant Logo" width="128px" />
   <h1>Alias Assistant✨</h1>
   <p>便捷的 macOS（Apple Silicon）shell 别名管理工具，使用 Tauri + Vue + TypeScript 构建。</p>
-  <img src="./screenshot.png" width="320px" />
+  <img src="./screenshot1.png" width="320px" />
+  <img src="./screenshot2.png" width="320px" />
 </div>
 
 ## 功能特性
