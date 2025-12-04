@@ -87,7 +87,11 @@ provide('importAliases', importAliases);
 <template>
   <div class="h-screen flex flex-col bg-background overflow-hidden">
     <main class="flex flex-col flex-1 p-4 min-h-0">
-      <RouterView />
+      <RouterView v-slot="{ Component, route }">
+        <Transition name="fade" mode="out-in">
+          <component :is="Component" :key="route.path" />
+        </Transition>
+      </RouterView>
     </main>
   </div>
 </template>
@@ -102,5 +106,16 @@ provide('importAliases', importAliases);
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Simple fade transition */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

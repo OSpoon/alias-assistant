@@ -201,7 +201,7 @@ onMounted(() => {
   <div class="flex flex-col flex-1 min-h-0">
     <div class="flex justify-between items-center mt-2 mb-6">
       <h1 class="text-3xl font-bold text-primary">Settings</h1>
-      <Button @click="router.push('/')" variant="ghost" size="icon" title="Settings">
+      <Button @click="router.back()" variant="ghost" size="icon" title="Settings">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
@@ -210,14 +210,14 @@ onMounted(() => {
 
     <div class="flex-1 overflow-y-auto">
       <div class="max-w-2xl mx-auto space-y-6 px-4">
-        <div>
+        <div class="opacity-0 animate-[fadeIn_0.4s_ease-out_forwards]" style="animation-delay: 0ms">
           <Label class="font-semibold mb-2 block text-base">Theme</Label>
           <ThemeSelector :themes="themes" :current-theme="currentTheme" @update:current-theme="setTheme" />
         </div>
 
-        <Separator />
+        <Separator class="opacity-0 animate-[fadeIn_0.4s_ease-out_forwards]" style="animation-delay: 50ms" />
 
-        <div>
+        <div class="opacity-0 animate-[fadeIn_0.4s_ease-out_forwards]" style="animation-delay: 100ms">
           <Label class="font-semibold mb-2 block text-base">Updates</Label>
           <div class="flex flex-col gap-2 mt-2">
             <Button @click="handleInstallUpdate" :disabled="checkingUpdate || installingUpdate"
@@ -238,9 +238,9 @@ onMounted(() => {
           </div>
         </div>
 
-        <Separator />
+        <Separator class="opacity-0 animate-[fadeIn_0.4s_ease-out_forwards]" style="animation-delay: 150ms" />
 
-        <div>
+        <div class="opacity-0 animate-[fadeIn_0.4s_ease-out_forwards]" style="animation-delay: 200ms">
           <Label class="font-semibold mb-2 block text-base">GitHub Gist Sync</Label>
           <p class="text-sm text-muted-foreground mb-4">
             Sync your aliases to GitHub Gist for backup and cross-device synchronization.
@@ -299,9 +299,9 @@ onMounted(() => {
           </div>
         </div>
 
-        <Separator />
+        <Separator class="opacity-0 animate-[fadeIn_0.4s_ease-out_forwards]" style="animation-delay: 250ms" />
 
-        <div>
+        <div class="opacity-0 animate-[fadeIn_0.4s_ease-out_forwards]" style="animation-delay: 300ms">
           <Label class="font-semibold mb-2 block text-base">Alias Management</Label>
           <p class="text-sm text-muted-foreground mb-4">
             Export or import your aliases to/from a file.
