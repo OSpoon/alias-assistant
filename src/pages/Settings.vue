@@ -200,7 +200,7 @@ onMounted(() => {
 <template>
   <div class="flex flex-col flex-1 min-h-0">
     <div class="flex justify-between items-center mt-2 mb-6">
-      <h1 class="text-3xl font-bold text-primary">Settings</h1>
+      <h1 class="text-3xl font-bold text-primary text-shadow-lg">Settings</h1>
       <Button @click="router.push('/')" variant="ghost" size="icon" title="Settings">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />

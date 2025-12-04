@@ -96,7 +96,7 @@ onMounted(async () => {
     <ToastNotification :show="showReloadHint" :message="toastMessage" @close="showReloadHint = false" />
 
     <div class="flex justify-between items-center mt-2 mb-6">
-      <h1 class="text-3xl font-bold text-primary">Alias Assistant ✨</h1>
+      <h1 class="text-3xl font-bold text-primary text-shadow-lg">Alias Assistant ✨</h1>
       <Button 
         @click="router.push('/settings')" 
         variant="ghost"
